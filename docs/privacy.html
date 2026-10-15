@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — Raycall</title>
+  <link rel="icon" type="image/png" href="./assets/icon.png" />
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+      background: #070C16;
+      color: #F8FAFC;
+      line-height: 1.7;
+      margin: 0;
+      padding: 48px 24px;
+    }
+    .container {
+      max-width: 780px;
+      margin: 0 auto;
+      background: #0F1728;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px;
+      padding: 40px;
+    }
+    h1 { font-size: 2rem; margin-top: 0; color: #FFB547; }
+    h2 { font-size: 1.25rem; margin-top: 28px; color: #F8FAFC; }
+    p, li { color: #CBD5E1; }
+    a { color: #FFB547; }
+    .badge {
+      display: inline-block;
+      padding: 5px 12px;
+      border-radius: 99px;
+      background: rgba(52, 211, 153, 0.15);
+      color: #34D399;
+      font-weight: 700;
+      font-size: 0.8rem;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="./">← Back to Raycall Home</a>
+    <br /><br />
+    <span class="badge">100% ON-DEVICE · ZERO DATA COLLECTED</span>
+    <h1>Privacy Policy for Raycall</h1>
+    <p><strong>Effective Date:</strong> October 16, 2026<br />
+    <strong>App Name:</strong> Raycall<br />
+    <strong>Bundle Identifier:</strong> <code>com.weifengluo.raycall</code></p>
+
+    <h2>1. Summary: Zero Data Collection</h2>
+    <p>Raycall is built from the ground up as a <strong>100% on-device, offline-first application</strong>. We do <strong>not</strong> collect, transmit, store, rent, or sell any personal data, photos, videos, recognized text (OCR), location coordinates, search queries, or device diagnostics.</p>
+
+    <h2>2. Photo Library Access &amp; Local AI Processing</h2>
+    <ul>
+      <li><strong>Why We Request Photo Library Permission:</strong> Raycall requires read access to your iOS Photo Library solely to generate visual embeddings and text recognition (OCR) indexes locally on your iPhone so you can search your library using natural language.</li>
+      <li><strong>100% On-Device Execution:</strong> All AI inference (powered by the bundled Google EmbeddingGemma 2 LiteRT model and Apple Vision framework) runs exclusively on your device's CPU, GPU, and Neural Engine.</li>
+      <li><strong>Local Storage Only:</strong> Generated 768-dimensional vectors and recognized OCR text snippets are stored strictly inside the app's private local sandbox SQLite database on your device.</li>
+      <li><strong>Strict Album Isolation:</strong> Photos and videos in your system <em>Hidden</em> and <em>Recently Deleted</em> albums are never accessed or indexed.</li>
+    </ul>
+
+    <h2>3. No Network Transmission, Analytics, or Tracking</h2>
+    <ul>
+      <li>Raycall requires no user account or sign-in.</li>
+      <li>Raycall contains zero third-party analytics SDKs, advertising SDKs, or crash-reporting trackers.</li>
+      <li>In accordance with Apple's App Store Privacy Nutrition Labels, Raycall declares <strong>"Data Not Collected"</strong> (`NSPrivacyTracking = false`, `NSPrivacyCollectedDataTypes = []`).</li>
+    </ul>
+
+    <h2>4. Data Deletion &amp; User Control</h2>
+    <p>You can clear your search history or delete the entire local vector index at any time inside the app (<strong>Settings → Rebuild Entire Photo Index</strong>), or by uninstalling Raycall from your iPhone, which permanently removes the local sandbox database.</p>
+
+    <h2>5. Contact Us</h2>
+    <p>If you have any questions about this Privacy Policy, please contact us via <a href="https://github.com/mapix/raycall/issues">GitHub Issues</a> or email <a href="mailto:luoweifeng.talent@gmail.com">luoweifeng.talent@gmail.com</a>.</p>
+  </div>
+</body>
+</html>
