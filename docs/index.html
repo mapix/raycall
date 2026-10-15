@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Raycall — Private On-Device AI Photo & Video Recall for iPhone</title>
+  <meta name="description" content="Call back every ray of memory. Find any photo, video, ID card, or receipt in your iPhone library using natural language — 100% offline with Google EmbeddingGemma 2 & Apple Vision." />
+  <meta property="og:title" content="Raycall — Private On-Device AI Photo Recall" />
+  <meta property="og:description" content="Search your iPhone photo library by scene, time, or text on IDs & receipts — 100% on-device with zero cloud uploads." />
+  <meta property="og:image" content="./assets/icon.png" />
+  <link rel="icon" type="image/png" href="./assets/icon.png" />
+  <style>
+    :root {
+      --bg: #070C16;
+      --surface: #0F1728;
+      --card: rgba(18, 28, 46, 0.78);
+      --border: rgba(255, 255, 255, 0.09);
+      --amber: #FFB547;
+      --amber-glow: rgba(255, 181, 71, 0.22);
+      --sky: #38BDF8;
+      --emerald: #34D399;
+      --ink: #F8FAFC;
+      --muted: #94A3B8;
+      --faint: #64748B;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", system-ui, sans-serif;
+      background-color: var(--bg);
+      color: var(--ink);
+      line-height: 1.6;
+      overflow-x: hidden;
+      background-image:
+        radial-gradient(circle at 50% 0%, rgba(255, 181, 71, 0.14) 0%, transparent 52%),
+        radial-gradient(circle at 85% 25%, rgba(56, 189, 248, 0.08) 0%, transparent 45%);
+    }
+    a { color: inherit; text-decoration: none; }
+
+    /* Navbar */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      background: rgba(7, 12, 22, 0.78);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 1.25rem;
+      letter-spacing: -0.02em;
+    }
+    .brand img {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      box-shadow: 0 0 20px rgba(255, 181, 71, 0.35);
+    }
+    .brand-badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 2px 8px;
+      border-radius: 99px;
+      background: rgba(255, 181, 71, 0.14);
+      color: var(--amber);
+      border: 1px solid rgba(255, 181, 71, 0.32);
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+    .nav-links a:hover { color: var(--ink); }
+    .nav-cta {
+      padding: 8px 16px;
+      border-radius: 99px;
+      background: var(--amber);
+      color: #1B1203 !important;
+      font-weight: 700;
+      font-size: 0.88rem;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .nav-cta:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(255, 181, 71, 0.35);
+    }
+
+    /* Hero */
+    .hero {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 76px 24px 56px;
+      text-align: center;
+    }
+    .hero-icon-wrap {
+      display: inline-flex;
+      padding: 6px;
+      border-radius: 32px;
+      background: linear-gradient(135deg, rgba(255, 181, 71, 0.4), rgba(56, 189, 248, 0.2));
+      box-shadow: 0 24px 64px rgba(255, 181, 71, 0.22);
+      margin-bottom: 24px;
+    }
+    .hero-icon {
+      width: 112px;
+      height: 112px;
+      border-radius: 26px;
+      display: block;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 99px;
+      background: rgba(255, 181, 71, 0.12);
+      border: 1px solid rgba(255, 181, 71, 0.3);
+      color: var(--amber);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .pill-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--amber);
+      box-shadow: 0 0 8px var(--amber);
+    }
+    h1 {
+      font-size: clamp(2.5rem, 6vw, 4.4rem);
+      font-weight: 850;
+      letter-spacing: -0.035em;
+      line-height: 1.08;
+      margin-bottom: 20px;
+      background: linear-gradient(180deg, #FFFFFF 0%, #CBD5E1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    h1 span {
+      background: linear-gradient(135deg, #FFE2A8 0%, #FFB547 55%, #F59E0B 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-sub {
+      max-width: 720px;
+      margin: 0 auto 34px;
+      font-size: clamp(1.05rem, 2vw, 1.25rem);
+      color: var(--muted);
+    }
+    .cta-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-bottom: 42px;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 15px 28px;
+      border-radius: 99px;
+      background: linear-gradient(135deg, #FFD07B 0%, #FFB547 100%);
+      color: #1B1203;
+      font-weight: 800;
+      font-size: 1.02rem;
+      box-shadow: 0 12px 32px rgba(255, 181, 71, 0.28);
+      transition: transform 0.15s ease;
+    }
+    .btn-primary:hover { transform: translateY(-2px); }
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 15px 26px;
+      border-radius: 99px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--ink);
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    .btn-secondary:hover { border-color: rgba(255, 181, 71, 0.4); }
+
+    /* Interactive Demo Bar */
+    .demo-bar {
+      max-width: 680px;
+      margin: 0 auto 20px;
+      background: var(--surface);
+      border: 1px solid rgba(255, 181, 71, 0.35);
+      border-radius: 99px;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+    }
+    .demo-query {
+      flex: 1;
+      text-align: left;
+      font-size: 1.02rem;
+      color: var(--ink);
+      font-weight: 500;
+    }
+    .demo-tag {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 99px;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--sky);
+    }
+    .chip-row {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .chip {
+      padding: 7px 14px;
+      border-radius: 99px;
+      font-size: 0.85rem;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .chip:hover, .chip.active {
+      background: rgba(255, 181, 71, 0.15);
+      border-color: rgba(255, 181, 71, 0.45);
+      color: var(--amber);
+    }
+
+    /* Screenshot Gallery */
+    .gallery-section {
+      max-width: 1280px;
+      margin: 36px auto 80px;
+      padding: 0 24px;
+    }
+    .gallery-scroll {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .shot-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      overflow: hidden;
+      transition: transform 0.25s ease, border-color 0.25s ease;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+    .shot-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(255, 181, 71, 0.4);
+    }
+    .shot-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Features Bento Grid */
+    .section {
+      max-width: 1180px;
+      margin: 0 auto 90px;
+      padding: 0 24px;
+    }
+    .section-head {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .section-head h2 {
+      font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+    .section-head p {
+      color: var(--muted);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .bento {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+    }
+    .bento-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .bento-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(255, 181, 71, 0.14);
+      border: 1px solid rgba(255, 181, 71, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+    }
+    .bento-card h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+    .bento-card p {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    /* Privacy Nutrition Card */
+    .privacy-box {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(15, 23, 40, 0.92) 100%);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      border-radius: 28px;
+      padding: 42px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 28px;
+    }
+    .privacy-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 99px;
+      background: rgba(52, 211, 153, 0.15);
+      color: var(--emerald);
+      font-weight: 700;
+      font-size: 0.82rem;
+      margin-bottom: 12px;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 48px 24px;
+      color: var(--faint);
+      font-size: 0.9rem;
+    }
+    .footer-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+    .footer-links a:hover { color: var(--ink); }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="./" class="brand">
+        <img src="./assets/icon.png" alt="Raycall Icon" />
+        <span>Raycall</span>
+        <span class="brand-badge">100% ON-DEVICE</span>
+      </a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#privacy">Privacy</a>
+        <a href="./support.html">Support</a>
+        <a href="./privacy.html">Privacy Policy</a>
+        <a href="https://apps.apple.com/app/raycall" class="nav-cta">Free on App Store</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-icon-wrap">
+      <img src="./assets/icon.png" alt="Raycall App Icon" class="hero-icon" />
+    </div>
+    <br />
+    <div class="pill">
+      <span class="pill-dot"></span>
+      <span>Powered by Google EmbeddingGemma 2 &amp; Apple Vision</span>
+    </div>
+    <h1>Call Back Every <span>Ray of Memory.</span></h1>
+    <p class="hero-sub">
+      Find any photo, video, ID card, or receipt in your iPhone library using natural language.
+      100% on-device multimodal AI with zero cloud uploads, zero accounts, and zero tracking.
+    </p>
+    <div class="cta-row">
+      <a href="https://apps.apple.com/app/raycall" class="btn-primary">
+        <span> Download Free on the App Store</span>
+      </a>
+      <a href="https://github.com/mapix/raycall" class="btn-secondary">
+        <span>View Open Documentation on GitHub</span>
+      </a>
+    </div>
+
+    <div class="demo-bar">
+      <span>🔍</span>
+      <div class="demo-query" id="demoText">"Sunset at the beach last summer"</div>
+      <span class="demo-tag" id="demoTag">768D Semantic + Time</span>
+    </div>
+    <div class="chip-row">
+      <button class="chip active" onclick="setDemo('Sunset at the beach last summer', '768D Semantic + Time', this)">🌅 Sunset last summer</button>
+      <button class="chip" onclick="setDemo('ID &amp; Documents', 'Apple Vision OCR', this)">🪪 ID &amp; Documents</button>
+      <button class="chip" onclick="setDemo('People &amp; Portraits', 'Visual Scene Match', this)">👤 People &amp; Portraits</button>
+      <button class="chip" onclick="setDemo('Indoor &amp; Rooms', 'Visual Scene Match', this)">🏠 Indoor &amp; Rooms</button>
+      <button class="chip" onclick="setDemo('Receipts &amp; Bills', 'Exact Text Boost', this)">🧾 Receipts &amp; Bills</button>
+    </div>
+  </header>
+
+  <section class="gallery-section">
+    <div class="gallery-scroll">
+      <div class="shot-card"><img src="./assets/01_home.png" alt="Raycall Home Screen" loading="lazy" /></div>
+      <div class="shot-card"><img src="./assets/02_search.png" alt="Natural Language Search" loading="lazy" /></div>
+      <div class="shot-card"><img src="./assets/03_ocr_cards.png" alt="OCR Text & Documents Cards" loading="lazy" /></div>
+      <div class="shot-card"><img src="./assets/04_detail.png" alt="Full Screen OCR Text Extraction" loading="lazy" /></div>
+      <div class="shot-card"><img src="./assets/05_settings.png" alt="On-Device AI Index Engine" loading="lazy" /></div>
+    </div>
+  </section>
+
+  <section id="features" class="section">
+    <div class="section-head">
+      <h2>Engineered for Speed, Precision &amp; Complete Privacy</h2>
+      <p>Every component of Raycall is tuned to run directly on Apple Silicon — Metal GPU, Neural Engine, and SQLite WAL.</p>
+    </div>
+    <div class="bento">
+      <div class="bento-card">
+        <div class="bento-icon">✨</div>
+        <h3>768D Multimodal Embeddings</h3>
+        <p>Bundled with Google EmbeddingGemma 2 (440M LiteRT). Encodes visual scenes, timestamps, seasons, and offline location names into a shared 768-dimensional vector space.</p>
+      </div>
+      <div class="bento-card">
+        <div class="bento-icon">🪪</div>
+        <h3>Instant OCR for IDs &amp; Receipts</h3>
+        <p>Pre-screens photos with Apple Vision text rectangle detection and runs high-accuracy OCR on documents, boarding passes, invoices, and screenshots with 1-tap text sharing.</p>
+      </div>
+      <div class="bento-card">
+        <div class="bento-icon">🎯</div>
+        <h3>One-Tap Visual Similarity</h3>
+        <p>Found one great shot? Tap "Find Similar" on any photo or video to instantly surface visually and semantically related moments across your entire camera roll.</p>
+      </div>
+      <div class="bento-card">
+        <div class="bento-icon">⚡</div>
+        <h3>Matryoshka Two-Stage Retrieval</h3>
+        <p>Scans thousands of memories in milliseconds using 256D coarse filtering followed by full 768D cosine reranking and exact OCR keyword boosting.</p>
+      </div>
+      <div class="bento-card">
+        <div class="bento-icon">🌡️</div>
+        <h3>Thermal-Aware &amp; Boost Mode</h3>
+        <p>Deduplicates burst shots via Neural Engine feature prints, throttles automatically if your iPhone warms up, and offers instant 1-tap Boost Mode whenever you want full speed.</p>
+      </div>
+      <div class="bento-card">
+        <div class="bento-icon">🔒</div>
+        <h3>Hidden Album Isolation</h3>
+        <p>Strictly respects iOS photo permissions. Items inside your system "Hidden" and "Recently Deleted" albums are never read or indexed.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="privacy" class="section">
+    <div class="privacy-box">
+      <div style="max-width: 680px;">
+        <div class="privacy-badge">✓ APP STORE PRIVACY NUTRITION: DATA NOT COLLECTED</div>
+        <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 12px;">Your Photos Never Leave Your iPhone.</h2>
+        <p style="color: var(--muted);">
+          Unlike cloud photo services, Raycall ships with the AI model built right into the app bundle.
+          It requires zero internet connection to index or search your library, has no user accounts,
+          and embeds zero third-party analytics or advertising SDKs.
+        </p>
+      </div>
+      <div>
+        <a href="./privacy.html" class="btn-secondary">Read Full Privacy Policy →</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-inner">
+      <div>© 2026 Weifeng Luo. Raycall (com.weifengluo.raycall) · 100% Free &amp; Private On-Device AI.</div>
+      <div class="footer-links">
+        <a href="./privacy.html">Privacy Policy</a>
+        <a href="./support.html">Support &amp; FAQ</a>
+        <a href="https://github.com/mapix/raycall">GitHub</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function setDemo(query, tag, btn) {
+      document.getElementById('demoText').textContent = '"' + query + '"';
+      document.getElementById('demoTag').textContent = tag;
+      document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+    }
+  </script>
+</body>
+</html>
